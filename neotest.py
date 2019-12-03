@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/opt/python/libexec/bin/python
 
 from neo4j import GraphDatabase
 import datetime
@@ -32,6 +32,22 @@ client = MailChimp(mc_api= sys.argv[1], mc_user='fjblau@gmail.com')
 uri = "bolt://localhost:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
 
+def getAllLists():
+    listData = json.loads(json.dumps(client.lists.all(get_all=True)))
+    for listId in extract_values(listData, "id"):
+        listMembers = json.loads(json.dumps(client.lists.members.all(list_id=listId, get_all=True)))
+        for email in listMembers["members"]:
+            createText = """MERGE (l:List{listId:"""+"'"+listId+"'"+"""})
+            MERGE (p:Person{emailAddress:"""+"'"+email["email_address"]+"', emailId:"+"'"+email["id"]+"""'})
+            MERGE (p) -[r:MEMBER_OF_LIST]-> (l)
+            ON CREATE SET p.CreatedAt = timestamp()"""
+            print (createText)
+            #print(email["id"], email["email_address"])
+            with driver.session() as session:
+                result = session.run(createText)
+                print(result)
+
+
 def getEmailsFromCampaign(id):
 	campaignData = json.loads(json.dumps(client.reports.get(campaign_id=id, get_all=False)))
 	listData = json.loads(json.dumps(client.lists.members.all(list_id=campaignData["list_id"])))
@@ -52,9 +68,9 @@ def createEmailInGraph(tx,campaignId,):
 	#	session.read_transaction(createText)
 
 
+getAllLists()
 
-
-createEmailInGraph('xx', '6032f808ac')
+#createEmailInGraph('xx', '6032f808ac')
 
 def ts_to_str(ts):
 	return datetime.datetime.fromtimestamp(ts/1000).strftime('%Y-%m-%d %H:%M:%S')
