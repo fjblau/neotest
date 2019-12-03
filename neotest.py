@@ -28,13 +28,13 @@ def extract_values(obj, key):
 
 
 client = MailChimp(mc_api='98408af2ecb507cdd3ff9e5d173a6b72-us20', mc_user='fjblau@gmail.com')
-campaignData = json.loads(json.dumps(client.reports.get(campaign_id='6032f808ac', get_all=False)))
 
-print(campaignData["list_id"])
+def getEmailsFromCampaign(id):
+	campaignData = json.loads(json.dumps(client.reports.get(campaign_id=id, get_all=False)))
+	listData = json.loads(json.dumps(client.lists.members.all(list_id=campaignData["list_id"])))
+	return extract_values(listData,"email_address")
 
-listData = json.loads(json.dumps(client.lists.members.all(list_id=campaignData["list_id"])))
-
-print(extract_values(listData,"email_address"))
+print (getEmailsFromCampaign('6032f808ac'))
 
 uri = "bolt://localhost:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
@@ -44,11 +44,11 @@ driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
 def ts_to_str(ts):
 	return datetime.datetime.fromtimestamp(ts/1000).strftime('%Y-%m-%d %H:%M:%S')
 
-def docs_downloaded_by(tx, name):
-    for record in tx.run( "MATCH  (p:Person {firstname: {name}})-[:DOWNLOAD_FROM_EMAIL] -> (d)"
-						  "RETURN p.firstname, d.docName, d.createdAt", name=name):
-    	print(str(record["p.firstname"]), str(record["d.docName"]), ts_to_str(record["d.createdAt"]))
+#def docs_downloaded_by(tx, name):
+#    for record in tx.run( "MATCH  (p:Person {firstname: {name}})-[:DOWNLOAD_FROM_EMAIL] -> (d)"
+#						  "RETURN p.firstname, d.docName, d.createdAt", name=name):
+#    	print(str(record["p.firstname"]), str(record["d.docName"]), ts_to_str(record["d.createdAt"]))
 
-with driver.session() as session:
-    session.read_transaction(docs_downloaded_by, sys.argv[1])
+#with driver.session() as session:
+#    session.read_transaction(docs_downloaded_by, sys.argv[1])
 
