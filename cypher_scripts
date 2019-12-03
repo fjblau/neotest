@@ -1,0 +1,87 @@
+// Known Person Read Article
+
+MATCH(c:Company {companyName:'MassiveArt'}),
+     (p:Person {firstname:'Frank'})
+CREATE (email1: Email {id: 1, content:'email'}),
+(c)-[:SENT]->(email)-[:TO] ->(p)
+
+MERGE  (p:Person {firstname:'Frank'})
+MERGE (u:URL {url:'www.massiveart.com/downloads/document1.pdf'})
+MERGE (p)-[:CLICKED_THROUGH] -> (u)
+
+MERGE (aArticle: {title:'Article Four'})
+ON CREATE SET createdAt:timestamp()
+RETURN a.title
+
+MERGE (e:Email {Subject:'Document Download Request'})
+MERGE (p:Person: {firstname: 'Frank', emailAddress:'fjblau@gmail.com'})
+ON CREATE SET createdAt:timestamp()
+RETURN e.subject
+
+MERGE (p:Person: {firstname:'Frank'}),
+	  (d.Download: {docName: 'Document One'}),
+	  (p)-[:REQUESTED_DOWNLOAD docRequestedAt:TIMESTAMP()] -> (d)
+
+ON CREATE SET d.createdAt=timestamp(), 
+			  p.createdAt=timestamp()
+RETURN p.firstname
+
+
+MERGE (p1:Person{firstname:'Frank'})
+MERGE (p2:Person{firstname:'Bob'})
+MERGE (p1) -[r:FRIENDS_WITH]-> (p2)
+ON CREATE SET p1.CreatedAt = timestamp(),
+ 			  p2.CreatedAt = timestamp()
+
+MATCH (p:Person{firstname:'Jens'}),
+	  (a:Article{title:'Article 4'}
+MERGE (p) -[r:READ]-> (a)
+ON CREATE SET r.READ_AT = timestamp()
+
+MATCH (company:Company {companyName:'Massive Art'}),
+	  (p:Person {firstname:'Jens'})
+CREATE (p)-[:VISITED_WEBSITE {visitedAt: TIMESTAMP()}]->(company)
+
+// Create Articles
+MERGE (article1:Article {title:'Article One'}),
+ (article2:Article {title:'Article Two'}),
+ (article3:Article {title:'Article Three'}),
+ (article4:Article {title:'Article Four'}),
+ (article5:Article {title:'Article Five'})
+
+// Make request
+MATCH (p:Person {firstname:'Jens'}), 
+	  (r:Request {requestType:'More Information'})
+CREATE (p)-[:MADE_REQUEST {requestedAt: TIMESTAMP()}]->(r)
+
+MATCH (t:Term), (s:Term) WHERE t <> s AND (t)-[:TOGETHER]-(s) RETURN t.word, COUNT((t)-[:TOGETHER]-(s));
+
+
+
+MATCH (n:Article) WHERE n.title = 'Article Three' RETURN SIZE( (n)–>() ) as degree
+
+MATCH p=()-[r:READ]->() where p.title = 'Article Three' RETURN p LIMIT 25
+
+// Read Article and Visited Website
+MATCH (u:Person)-[r1:READ]->(a:Article {title:'Article Four'}),
+	  (u:Person)-[r2:WORKS_AT]->(c1:Company {name:'Blum'}),
+      (u:Person)-[r3:VISITED_WEBSITE]->(c2:Company {name:'Massive Art'})
+RETURN u.name, r1.readAt
+
+
+// Frank Friends with Reader
+MATCH (u:Person)-[r1:READ]->(a:Article {title:'Article Four'}),
+	  (u:Person)-[r2:WORKS_AT]->(c1:Company {name:'Blum'}),
+      (u:Person)<-[r3:FRIENDS_WITH]-(p:Person {name:'Frank'})
+RETURN u.name, r1.readAt
+
+// Reader and Visitor
+MATCH (u:Person)-[r1:READ]->(a:Article {title:'Article Four'}),
+	  (u:Person)-[r2:WORKS_AT]->(c1:Company {name:'Blum'}),
+      (u:Person)-[r3:VISITED_WEBSITE]->(c2:Company {name:'Massive Art'})
+RETURN u.name, r1.readAt
+
+// Article Read By
+MATCH (u:Person)-[r:READ]->(a:Article {title:'Article Four'}),
+	  (u:Person)-[r2:WORKS_AT]->(company:Company)
+RETURN u.name, company.name, r.readAt

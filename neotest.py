@@ -27,14 +27,18 @@ def extract_values(obj, key):
     return results
 
 
-client = MailChimp(mc_api='98408af2ecb507cdd3ff9e5d173a6b72-us20', mc_user='fjblau@gmail.com')
+#client = MailChimp(mc_api='98408af2ecb507cdd3ff9e5d173a6b72-us20', mc_user='fjblau@gmail.com')
+client = MailChimp(mc_api= sys.argv[1], mc_user='fjblau@gmail.com')
 
 def getEmailsFromCampaign(id):
 	campaignData = json.loads(json.dumps(client.reports.get(campaign_id=id, get_all=False)))
 	listData = json.loads(json.dumps(client.lists.members.all(list_id=campaignData["list_id"])))
 	return extract_values(listData,"email_address")
 
-print (getEmailsFromCampaign('6032f808ac'))
+#print (getEmailsFromCampaign('6032f808ac'))
+
+for email in getEmailsFromCampaign('6032f808ac'):
+	print str(email)
 
 uri = "bolt://localhost:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
