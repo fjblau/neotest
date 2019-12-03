@@ -27,11 +27,11 @@ ON CREATE SET d.createdAt=timestamp(),
 RETURN p.firstname
 
 
-MERGE (p1:Person{firstname:'Frank'})
-MERGE (p2:Person{firstname:'Bob'})
-MERGE (p1) -[r:FRIENDS_WITH]-> (p2)
-ON CREATE SET p1.CreatedAt = timestamp(),
- 			  p2.CreatedAt = timestamp()
+MERGE (e:Email {campaignId:{campaignId}})
+MERGE (p:Person{emailAddress:{email}})
+MERGE (e) -[r:SENT_TO]-> (p)
+ON CREATE SET p.CreatedAt = timestamp()
+
 
 MATCH (p:Person{firstname:'Jens'}),
 	  (a:Article{title:'Article 4'}
