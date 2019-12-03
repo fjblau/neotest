@@ -20,14 +20,16 @@ def getAllLists():
     for listRec in listData["lists"]:
         listId = listRec["id"]
         listName = listRec["name"]
-        marketing_permissions = listRec["marketing_permissions"]
+        marketing_permissions = str(listRec["marketing_permissions"])
         listMembers = json.loads(json.dumps(client.lists.members.all(list_id=listId, get_all=True)))
+
         
         for email in listMembers["members"]:
             createText = """MERGE (l:List{listId:"""+"'"+listId+"', listName:'"+listName+"""'})
-            MERGE (p:Person{emailAddress:"""+"'"+email["email_address"]+"', emailId:"+"'"+email["id"]+"""'})
+            MERGE (p:Person{emailAddress:"""+"'"+email["email_address"]+"', emailId:"+"'"+email["id"]+"', marketing_permissions:"+"'"+marketing_permissions+"""'})
             MERGE (p) -[r:MEMBER_OF_LIST]-> (l)
             ON CREATE SET p.CreatedAt = timestamp()"""
+            #print(createText)
             with driver.session() as session:
                 result = session.run(createText)
                 print(result)
