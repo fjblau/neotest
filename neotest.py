@@ -8,7 +8,9 @@ import json
 
 
 #client = MailChimp(mc_api='98408af2ecb507cdd3ff9e5d173a6b72-us20', mc_user='fjblau@gmail.com')
-client = MailChimp(mc_api= sys.argv[1], mc_user='fjblau@gmail.com')
+#client = MailChimp(mc_api= sys.argv[1], mc_user='fjblau@gmail.com')
+client = MailChimp(mc_api= sys.argv[1], mc_user='accountadmin@massiveart.com')
+
 uri = "bolt://localhost:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
 
@@ -26,13 +28,12 @@ def getAllLists():
         marketing_permissions = sq(str(listRec["marketing_permissions"]))
         listMembers = json.loads(json.dumps(client.lists.members.all(list_id=listId, get_all=True)))
         listId = sq(listRec["id"])
-        
         for email in listMembers["members"]:
         	emailAddress = sq(email["email_address"])
-        	emailId = sq(email["id"])
+        	memberId = sq(email["id"])
         	createText = """
         	MERGE (l:List{listId:"""+listId+", listName:"+listName+"""})
-        	MERGE (p:Person{emailAddress:"""+emailAddress+", emailId:"+emailId+", marketing_permissions:"+marketing_permissions+"""})
+        	MERGE (p:Person{emailAddress:"""+emailAddress+", memberId:"+memberId+", marketing_permissions:"+marketing_permissions+"""})
         	MERGE (p) -[r:MEMBER_OF_LIST]-> (l)
         	ON CREATE SET p.CreatedAt = timestamp()
         	"""
@@ -40,12 +41,14 @@ def getAllLists():
         	with driver.session() as session:
         		result = session.run(createText)
         		print(result)
+        	#memberActivities = json.loads(json.dumps(client.lists.members.activity.all(list_id=listRec["id"], subscriber_hash=email["id"])))
+        	#print(memberActivities)
 
 def getAllCampaigns():
     campaignData = json.loads(json.dumps(client.campaigns.all(get_all=True)))
     for campaign in campaignData["campaigns"]:
         campaignId = sq(campaign["id"])
-        campaignName = sq(campaign["settings"]["title"])
+        campaignName = sq(campaign["settings"]["title"].replace("'",""))
         campaignRecipientListId = sq(campaign["recipients"]["list_id"])
         createText = """
         	MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+"""})
@@ -53,6 +56,7 @@ def getAllCampaigns():
             MERGE (l) -[r:LIST_USED_IN]-> (c)
             ON CREATE SET c.CreatedAt = timestamp()
             """
+        #print(createText)
         with driver.session() as session:
            result = session.run(createText)
            print(result)
