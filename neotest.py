@@ -43,16 +43,17 @@ def getAllLists():
         		print(result)
         	#memberActivities = json.loads(json.dumps(client.lists.members.activity.all(list_id=listRec["id"], subscriber_hash=email["id"])))
         	#print(memberActivities)
-            
+
 
 def getAllCampaigns():
     campaignData = json.loads(json.dumps(client.campaigns.all(get_all=True)))
     for campaign in campaignData["campaigns"]:
         campaignId = sq(campaign["id"])
+        emailsSent= campaign["emails_sent"]
         campaignName = sq(campaign["settings"]["title"].replace("'",""))
         campaignRecipientListId = sq(campaign["recipients"]["list_id"])
         createText = """
-        	MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+"""})
+        	MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+",emails_sent:"+str(emailsSent)+"""})
             MERGE (l:List{listId:"""+campaignRecipientListId+"""})
             MERGE (l) -[r:LIST_USED_IN]-> (c)
             ON CREATE SET c.CreatedAt = timestamp()
@@ -62,7 +63,7 @@ def getAllCampaigns():
            result = session.run(createText)
            print(result)
 
-getAllLists()
+#getAllLists()
 getAllCampaigns()
 
 
