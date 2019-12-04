@@ -43,6 +43,7 @@ def getAllLists():
         		print(result)
         	#memberActivities = json.loads(json.dumps(client.lists.members.activity.all(list_id=listRec["id"], subscriber_hash=email["id"])))
         	#print(memberActivities)
+            
 
 def getAllCampaigns():
     campaignData = json.loads(json.dumps(client.campaigns.all(get_all=True)))
