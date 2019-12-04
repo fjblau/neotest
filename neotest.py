@@ -15,38 +15,47 @@ driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
 def ts_to_str(ts):
     return datetime.datetime.fromtimestamp(ts/1000).strftime('%Y-%m-%d %H:%M:%S')
 
+def sq(q):
+	return "'" + q + "'"
+
 def getAllLists():
     listData = json.loads(json.dumps(client.lists.all(get_all=True)))
     for listRec in listData["lists"]:
         listId = listRec["id"]
-        listName = listRec["name"]
-        marketing_permissions = str(listRec["marketing_permissions"])
+        listName = sq(listRec["name"])
+        marketing_permissions = sq(str(listRec["marketing_permissions"]))
         listMembers = json.loads(json.dumps(client.lists.members.all(list_id=listId, get_all=True)))
-
+        listId = sq(listRec["id"])
         
         for email in listMembers["members"]:
-            createText = """MERGE (l:List{listId:"""+"'"+listId+"', listName:'"+listName+"""'})
-            MERGE (p:Person{emailAddress:"""+"'"+email["email_address"]+"', emailId:"+"'"+email["id"]+"', marketing_permissions:"+"'"+marketing_permissions+"""'})
-            MERGE (p) -[r:MEMBER_OF_LIST]-> (l)
-            ON CREATE SET p.CreatedAt = timestamp()"""
-            #print(createText)
-            with driver.session() as session:
-                result = session.run(createText)
-                print(result)
+        	emailAddress = sq(email["email_address"])
+        	emailId = sq(email["id"])
+        	createText = """
+        	MERGE (l:List{listId:"""+listId+", listName:"+listName+"""})
+        	MERGE (p:Person{emailAddress:"""+emailAddress+", emailId:"+emailId+", marketing_permissions:"+marketing_permissions+"""})
+        	MERGE (p) -[r:MEMBER_OF_LIST]-> (l)
+        	ON CREATE SET p.CreatedAt = timestamp()
+        	"""
+        	#print(createText)
+        	with driver.session() as session:
+        		result = session.run(createText)
+        		print(result)
 
 def getAllCampaigns():
     campaignData = json.loads(json.dumps(client.campaigns.all(get_all=True)))
     for campaign in campaignData["campaigns"]:
-        campaignId = campaign["id"]
-        campaignName = campaign["settings"]["title"]
-        campaignRecipientListId = campaign["recipients"]["list_id"]
-        createText = """MERGE (c:Campaign{campaignId:"""+"'"+campaignId+"', name:'"+campaignName+"""'})
-            MERGE (l:List{listId:"""+"'"+campaignRecipientListId+"""'})
+        campaignId = sq(campaign["id"])
+        campaignName = sq(campaign["settings"]["title"])
+        campaignRecipientListId = sq(campaign["recipients"]["list_id"])
+        createText = """
+        	MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+"""})
+            MERGE (l:List{listId:"""+campaignRecipientListId+"""})
             MERGE (l) -[r:LIST_USED_IN]-> (c)
-            ON CREATE SET c.CreatedAt = timestamp()"""
+            ON CREATE SET c.CreatedAt = timestamp()
+            """
         with driver.session() as session:
-            result = session.run(createText)
-            print(result)
+           result = session.run(createText)
+           print(result)
 
 getAllLists()
 getAllCampaigns()
