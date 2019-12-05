@@ -18,7 +18,7 @@ def ts_to_str(ts):
     return datetime.datetime.fromtimestamp(ts/1000).strftime('%Y-%m-%d %H:%M:%S')
 
 def sq(q):
-	return "'" + q + "'"
+    return "'" + q + "'"
 
 def getAllLists():
     listData = json.loads(json.dumps(client.lists.all(get_all=True)))
@@ -29,20 +29,23 @@ def getAllLists():
         listMembers = json.loads(json.dumps(client.lists.members.all(list_id=listId, get_all=True)))
         listId = sq(listRec["id"])
         for email in listMembers["members"]:
-        	emailAddress = sq(email["email_address"])
-        	memberId = sq(email["id"])
-        	createText = """
-        	MERGE (l:List{listId:"""+listId+", listName:"+listName+"""})
-        	MERGE (p:Person{emailAddress:"""+emailAddress+", memberId:"+memberId+", marketing_permissions:"+marketing_permissions+"""})
-        	MERGE (p) -[r:MEMBER_OF_LIST]-> (l)
-        	ON CREATE SET p.CreatedAt = timestamp()
-        	"""
-        	#print(createText)
-        	with driver.session() as session:
-        		result = session.run(createText)
-        		print(result)
-        	#memberActivities = json.loads(json.dumps(client.lists.members.activity.all(list_id=listRec["id"], subscriber_hash=email["id"])))
-        	#print(memberActivities)
+            emailAddress = sq(email["email_address"])
+            domain = sq(email["email_address"].split('@')[1])
+            memberId = sq(email["id"])
+            createText = """
+            MERGE (l:List{listId:"""+listId+", listName:"+listName+"""})
+            MERGE (p:Person{emailAddress:"""+emailAddress+", memberId:"+memberId+", marketing_permissions:"+marketing_permissions+"""})
+            MERGE (d:Domain{domain:"""+domain+"""})
+            MERGE (p) -[r:MEMBER_OF_LIST]-> (l)
+            MERGE (p) -[r2:AT_DOMAIN]-> (d)
+            ON CREATE SET p.CreatedAt = timestamp()
+            """
+        #print(createText)
+            with driver.session() as session:
+                result = session.run(createText)
+                print(result)
+        #memberActivities = json.loads(json.dumps(client.lists.members.activity.all(list_id=listRec["id"], subscriber_hash=email["id"])))
+        #print(memberActivities)
 
 
 def getAllCampaigns():
@@ -53,17 +56,17 @@ def getAllCampaigns():
         campaignName = sq(campaign["settings"]["title"].replace("'",""))
         campaignRecipientListId = sq(campaign["recipients"]["list_id"])
         createText = """
-        	MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+",emails_sent:"+str(emailsSent)+"""})
-            MERGE (l:List{listId:"""+campaignRecipientListId+"""})
-            MERGE (l) -[r:LIST_USED_IN]-> (c)
-            ON CREATE SET c.CreatedAt = timestamp()
-            """
-        #print(createText)
+        MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+",emails_sent:"+str(emailsSent)+"""})
+        MERGE (l:List{listId:"""+campaignRecipientListId+"""})
+        MERGE (l) -[r:LIST_USED_IN]-> (c)
+        ON CREATE SET c.CreatedAt = timestamp()
+        """
+    #print(createText)
         with driver.session() as session:
-           result = session.run(createText)
-           print(result)
+            result = session.run(createText)
+            print(result)
 
-#getAllLists()
+getAllLists()
 getAllCampaigns()
 
 
