@@ -1,10 +1,11 @@
-#!/usr/local/opt/python/libexec/bin/python
+#!/usr/bin/python
 
 from neo4j import GraphDatabase
 import datetime
 import sys
 from mailchimp3 import MailChimp
 import json
+import requests
 
 
 #client = MailChimp(mc_api='98408af2ecb507cdd3ff9e5d173a6b72-us20', mc_user='fjblau@gmail.com')
@@ -52,6 +53,8 @@ def getAllCampaigns():
     campaignData = json.loads(json.dumps(client.campaigns.all(get_all=True)))
     for campaign in campaignData["campaigns"]:
         campaignId = sq(campaign["id"])
+        campaignStatus = campaign["status"]
+        print(campaign["status"])
         emailsSent= campaign["emails_sent"]
         campaignName = sq(campaign["settings"]["title"].replace("'",""))
         campaignRecipientListId = sq(campaign["recipients"]["list_id"])
@@ -66,7 +69,37 @@ def getAllCampaigns():
             result = session.run(createText)
             print(result)
 
-getAllLists()
+        if (campaignStatus == 'sent'):
+            print("Sent Status")
+            createText = """
+            MATCH (c:Campaign{campaignId:"""+campaignId+"""})
+            MATCH (l:List{listId:"""+campaignRecipientListId+"""})
+            MERGE (c) - [:SENT_FROM] - (e:Email {content:'Email'}) - [r:SENT_TO] - (l)
+            """
+            with driver.session() as session:
+                result = session.run(createText)
+                print(result)
+
+        #print(json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaignId, get_all=True))))
+        emailActivity = json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaign["id"], get_all=False)))
+        for email in emailActivity["emails"]:
+            emailId = sq(email["email_id"])
+            emailAddress = sq(email["email_address"])
+            #createText = """
+            #MATCH (p:Person{emailAddress:"""+emailAddress+""""}),
+            #      (c2:Campaign {campaignId:"""+campaignId+"""}),
+            #      (l2:List{listId:"""+campaignRecipientListId+"""})
+            #MERGE (e:Email) - [to:SENT_TO] -> (p) -> [from:SENT_FROM] - (l2)
+            """
+
+            #for activity in email["activity"]:
+            #    createText = """
+            #    MATCH (p:Person{emailAddress:"""+emailAddress+""""}),
+            #    MERGE (e:Email) - [ec:SENT_TO] -> (p)
+            #    """
+        
+
+#getAllLists()
 getAllCampaigns()
 
 
