@@ -7,9 +7,6 @@ from mailchimp3 import MailChimp
 import json
 import requests
 
-
-#client = MailChimp(mc_api='98408af2ecb507cdd3ff9e5d173a6b72-us20', mc_user='fjblau@gmail.com')
-#client = MailChimp(mc_api= sys.argv[1], mc_user='fjblau@gmail.com')
 client = MailChimp(mc_api= sys.argv[1], mc_user='accountadmin@massiveart.com')
 
 uri = "bolt://localhost:7687"
@@ -70,11 +67,11 @@ def getAllCampaigns():
             print(result)
 
         if (campaignStatus == 'sent'):
-            print("Sent Status")
             createText = """
             MATCH (c:Campaign{campaignId:"""+campaignId+"""})
             MATCH (l:List{listId:"""+campaignRecipientListId+"""})
-            MERGE (c) - [:SENT_FROM] - (e:Email {content:'Email'}) - [r:SENT_TO] - (l)
+            MERGE (e:Email {content:'Email'}) - [:SENT_FROM] -> (c) 
+            MERGE (e2:Email {content:'Email'}) - [r:SENT_TO] -> (l)
             """
             with driver.session() as session:
                 result = session.run(createText)
@@ -99,7 +96,7 @@ def getAllCampaigns():
             #    """
         
 
-#getAllLists()
+getAllLists()
 getAllCampaigns()
 
 
