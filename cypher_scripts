@@ -75,6 +75,9 @@ MATCH (u:Person)-[r1:READ]->(a:Article {title:'Article Four'}),
       (u:Person)<-[r3:FRIENDS_WITH]-(p:Person {name:'Frank'})
 RETURN u.name, r1.readAt
 
+MATCH (p:Person) - [r:MEMBER_OF_LIST] -> (l:List {listName:'Herbst-Event 2019 ZUSAGEN'}) - [r2:LIST_USED_IN] - (c:Campaign)
+RETURN c,p,r,l
+
 // Reader and Visitor
 MATCH (u:Person)-[r1:READ]->(a:Article {title:'Article Four'}),
 	  (u:Person)-[r2:WORKS_AT]->(c1:Company {name:'Blum'}),
