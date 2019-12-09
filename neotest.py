@@ -104,11 +104,7 @@ def getAllCampaigns():
                         createText= """
                                     MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                     MATCH (c:Campaign{campaignId:"""+campaignId+"""})
-<<<<<<< HEAD
                                     MERGE (p) - [:OPENED] -> (c)
-=======
-                                    MERGE (p) - [:OPENED]a -> (c)
->>>>>>> 7c55ee7940b6725a920af8f5705193cfe2022410
                                     """
                     elif emailAction["action"] == 'bounce':
                         createText="MATCH(e:Email {emailHashId:"+sq(emailHashId)+"}) SET e.status = 'Bounced'"
