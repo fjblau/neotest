@@ -37,7 +37,7 @@ def getAllLists():
             memberId = sq(email["id"])
             createText = """
             MERGE (l:List{listId:"""+listId+", listName:"+listName+"""})
-            MERGE (p:Person{emailAddress:"""+emailAddress+", memberId:"+memberId+", marketing_permissions:"+marketing_permissions+"""})
+            MERGE (p:Person{emailAddress:"""+emailAddress+", memberId:"+memberId+"""})
             MERGE (d:Domain{domain:"""+domain+"""})
             MERGE (p) -[r:MEMBER_OF_LIST]-> (l)
             MERGE (p) -[r2:AT_DOMAIN]-> (d)
@@ -46,7 +46,7 @@ def getAllLists():
         #print(createText)
             with driver.session() as session:
                 result = session.run(createText)
-                print(result)
+                print("Lists", result)
         #memberActivities = json.loads(json.dumps(client.lists.members.activity.all(list_id=listRec["id"], subscriber_hash=email["id"])))
         #print(memberActivities)
 
@@ -97,17 +97,27 @@ def getAllCampaigns():
             with driver.session() as session:
                 result = session.run(createText)
                 print(result)
+            
             if "activity" in email:
                 for emailAction in email["activity"]:
                     if emailAction["action"] == 'open':
-                        createText="MATCH(e:Email {emailHashId:"+sq(emailHashId)+"}) SET e.status = 'Opened'"
-                    elif emailAction["action"] == 'bounced':
+                        createText= """
+                                    MATCH (p:Person{emailAddress:"""+emailAddress+"""})
+                                    MATCH (c:Campaign{campaignId:"""+campaignId+"""})
+                                    MERGE (p) - [:OPENED]a -> (c)
+                                    """
+                    elif emailAction["action"] == 'bounce':
                         createText="MATCH(e:Email {emailHashId:"+sq(emailHashId)+"}) SET e.status = 'Bounced'"
-
+                    elif emailAction["action"] == 'click':
+                        createText= """
+                                    MATCH (p:Person{emailAddress:"""+emailAddress+"""})
+                                    MERGE (u2:URL {url:"""+sq(emailAction["url"])+"""})
+                                    MERGE (p) - [:CLICKED] -> (u2)
+                                    """
                     with driver.session() as session:
                         result = session.run(createText)
                         print(result)
-#getAllLists()
+getAllLists()
 getAllCampaigns()
 
 
