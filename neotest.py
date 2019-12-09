@@ -6,6 +6,7 @@ import sys
 from mailchimp3 import MailChimp
 import json
 import requests
+import hashlib
 
 client = MailChimp(mc_api= sys.argv[1], mc_user='accountadmin@massiveart.com')
 
@@ -17,6 +18,10 @@ def ts_to_str(ts):
 
 def sq(q):
     return "'" + q + "'"
+
+def hashemailId(c, l, e):
+    hashed = c+l+e
+    return hashlib.sha256(hashed.encode()).hexdigest()
 
 def getAllLists():
     listData = json.loads(json.dumps(client.lists.all(get_all=True)))
@@ -51,7 +56,6 @@ def getAllCampaigns():
     for campaign in campaignData["campaigns"]:
         campaignId = sq(campaign["id"])
         campaignStatus = campaign["status"]
-        print(campaign["status"])
         emailsSent= campaign["emails_sent"]
         campaignName = sq(campaign["settings"]["title"].replace("'",""))
         campaignRecipientListId = sq(campaign["recipients"]["list_id"])
@@ -67,36 +71,43 @@ def getAllCampaigns():
             print(result)
 
         if (campaignStatus == 'sent'):
+            
             createText = """
             MATCH (c:Campaign{campaignId:"""+campaignId+"""})
             MATCH (l:List{listId:"""+campaignRecipientListId+"""})
-            MERGE (e:Email {content:'Email'}) - [:SENT_FROM] -> (c) 
-            MERGE (e2:Email {content:'Email'}) - [r:SENT_TO] -> (l)
+            MERGE (e:EmailGenerated{content:'Email Template'}) - [:GENERATED_BY] -> (c) 
+            MERGE (e2:EmailGenerated {content:'Email Template'}) - [r:SENT_TO] -> (l)
             """
             with driver.session() as session:
                 result = session.run(createText)
                 print(result)
 
-        #print(json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaignId, get_all=True))))
         emailActivity = json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaign["id"], get_all=False)))
         for email in emailActivity["emails"]:
+            emailHashId = hashemailId(campaign["id"], campaign["recipients"]["list_id"], email["email_address"])
             emailId = sq(email["email_id"])
             emailAddress = sq(email["email_address"])
-            #createText = """
-            #MATCH (p:Person{emailAddress:"""+emailAddress+""""}),
-            #      (c2:Campaign {campaignId:"""+campaignId+"""}),
-            #      (l2:List{listId:"""+campaignRecipientListId+"""})
-            #MERGE (e:Email) - [to:SENT_TO] -> (p) -> [from:SENT_FROM] - (l2)
+            createText = """
+            MATCH (p:Person{emailAddress:"""+emailAddress+"""}),
+                  (c2:Campaign {campaignId:"""+campaignId+"""}),
+                  (l2:List{listId:"""+campaignRecipientListId+"""})
+            MERGE (e:Email {content:'Email', status: 'Sent', emailHashId:"""+sq(emailHashId)+"""}) - [to:SENT_TO] -> (p)
+            MERGE (e2:Email{content:'Email', status: 'Sent', emailHashId:"""+sq(emailHashId)+"""}) - [from:SENT_FROM] -> (l2)
             """
+            with driver.session() as session:
+                result = session.run(createText)
+                print(result)
+            if "activity" in email:
+                for emailAction in email["activity"]:
+                    if emailAction["action"] == 'open':
+                        createText="MATCH(e:Email {emailHashId:"+sq(emailHashId)+"}) SET e.status = 'Opened'"
+                    elif emailAction["action"] == 'bounced':
+                        createText="MATCH(e:Email {emailHashId:"+sq(emailHashId)+"}) SET e.status = 'Bounced'"
 
-            #for activity in email["activity"]:
-            #    createText = """
-            #    MATCH (p:Person{emailAddress:"""+emailAddress+""""}),
-            #    MERGE (e:Email) - [ec:SENT_TO] -> (p)
-            #    """
-        
-
-getAllLists()
+                    with driver.session() as session:
+                        result = session.run(createText)
+                        print(result)
+#getAllLists()
 getAllCampaigns()
 
 
