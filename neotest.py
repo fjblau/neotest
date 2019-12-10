@@ -107,13 +107,18 @@ def getAllCampaigns():
                                     MERGE (p) - [:OPENED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
                                     """
                     elif emailAction["action"] == 'bounce':
-                        createText="MATCH(e:Email {emailHashId:"+sq(emailHashId)+"}) SET e.status = 'Bounced'"
+                        createText="""
+                                    MATCH (p:Person{emailAddress:"""+emailAddress+"""})
+                                    MATCH (c:Campaign{campaignId:"""+campaignId+"""})
+                                    MERGE (p) - [:BOUNCED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
+                                    """
                     elif emailAction["action"] == 'click':
                         createText= """
                                     MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                     MERGE (u2:URL {url:"""+sq(emailAction["url"])+"""})
-                                    MERGE (p) - [:CLICKED {timestamp:"""+sq(emailAction["timestamp"])+"""}] ] -> (u2)
+                                    MERGE (p) - [:CLICKED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (u2)
                                     """
+                    #print(createText)
                     with driver.session() as session:
                         result = session.run(createText)
                         print(result)
