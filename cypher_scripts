@@ -88,3 +88,42 @@ RETURN u.name, r1.readAt
 MATCH (u:Person)-[r:READ]->(a:Article {title:'Article Four'}),
 	  (u:Person)-[r2:WORKS_AT]->(company:Company)
 RETURN u.name, company.name, r.readAt
+
+
+
+MATCH (p:Person)-[r:OPENED]->(c:Campaign{campaignId:'0269167bfe'}),
+	  (p2:Person)-[c:CLICKED] ->(u:URL)
+RETURN p,c,u
+
+
+MATCH (p:Person) - [clicked:CLICKED] - (u:URL)
+RETURN p.emailAddress as person, COUNT(clicked)
+UNION 
+
+MATCH (p:Person) - [opened:OPENED] - (c:Campaign)
+MERGE (action:Open {person: p.id, ts:opened.timestamp})
+
+
+MATCH (p:Person {emailAddress:"monika.albrecht@au-schoppernau.at"}) - [opened:CLICKED] - (u:URL)
+CREATE (a:Action {action:"Click", person: p.memberId, ts:opened.timestamp})-[:TARGET] ->(u)
+
+MATCH (p:Person {emailAddress:"monika.albrecht@au-schoppernau.at"}) - [opened:OPENED] - (c:Campaign)
+CREATE (a:Action {action:"Open", person: p.memberId, ts:opened.timestamp}) - [:TARGET] -> (c)
+
+MATCH (o:openAction)
+RETURN o.ts as ts
+UNION ALL MATCH (c:clickAction)
+RETURN n.title AS name
+
+
+MATCH (a:Action)
+WITH a
+ORDER BY a.ts ASC
+LIMIT 250
+WITH collect(a) as actions
+FOREACH (i in range(0, size(actions) - 2) |
+ FOREACH (node1 in [actions[i]] |
+  FOREACH (node2 in [actions[i+1]] |
+   CREATE (node1)-[:NEXT]->(node2))))
+
+
