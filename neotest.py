@@ -8,6 +8,11 @@ import json
 import requests
 import hashlib
 
+with open('persona.json', 'r') as personafile:
+    personadata = personafile.read()
+
+personas = json.loads(personadata)
+
 client = MailChimp(mc_api= sys.argv[1], mc_user='accountadmin@massiveart.com')
 
 uri = "bolt://localhost:7687"
@@ -54,6 +59,9 @@ def getAllLists():
 def getAllCampaigns():
     campaignData = json.loads(json.dumps(client.campaigns.all(get_all=True)))
     for campaign in campaignData["campaigns"]:
+
+        campaignPersonas = personas["links"]
+
         campaignId = sq(campaign["id"])
         campaignStatus = campaign["status"]
         emailsSent= campaign["emails_sent"]
@@ -68,7 +76,7 @@ def getAllCampaigns():
     #print(createText)
         with driver.session() as session:
             result = session.run(createText)
-            print(result)
+            #print(result)
 
         if (campaignStatus == 'sent'):
             
@@ -80,7 +88,7 @@ def getAllCampaigns():
             """
             with driver.session() as session:
                 result = session.run(createText)
-                print(result)
+                #print(result)
 
         emailActivity = json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaign["id"], get_all=False)))
         for email in emailActivity["emails"]:
@@ -96,7 +104,7 @@ def getAllCampaigns():
             """
             with driver.session() as session:
                 result = session.run(createText)
-                print(result)
+                #print(result)
             
             if "activity" in email:
                 for emailAction in email["activity"]:
@@ -113,6 +121,7 @@ def getAllCampaigns():
                                     MERGE (p) - [:BOUNCED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
                                     """
                     elif emailAction["action"] == 'click':
+                        print(emailAction["url"])
                         createText= """
                                     MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                     MERGE (u2:URL {url:"""+sq(emailAction["url"])+"""})
@@ -121,8 +130,8 @@ def getAllCampaigns():
                     #print(createText)
                     with driver.session() as session:
                         result = session.run(createText)
-                        print(result)
-getAllLists()
+                        #print(result)
+#getAllLists()
 getAllCampaigns()
 
 

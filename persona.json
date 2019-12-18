@@ -1,0 +1,20 @@
+{
+  "CampaignId": "ier9234234",
+  "CampaignName": "MA Newsletter",
+  "links" : [
+    {
+    "linkURL" : "https://www.massiveart.com/der-digitale-manager",
+    "personas": [
+       {"Engineering" : {"openPoints": 1, "clickPoints" : 2}},
+       {"Engagement" : {"openPoints": 1, "clickPoints" : 2}}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/das-fruehjahrs-event-bei-massive-art",
+    "personas": [
+      {"Event" : {"openPoints": 1, "clickPoints" : 2}},
+      {"Engagement" : {"openPoints": 1, "clickPoints" : 2}}
+      ]
+    }
+  ]
+}
