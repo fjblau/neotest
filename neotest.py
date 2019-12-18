@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/opt/python/libexec/bin/python
 
 from neo4j import GraphDatabase
 import datetime
@@ -9,9 +9,7 @@ import requests
 import hashlib
 
 with open('persona.json', 'r') as personafile:
-    personadata = personafile.read()
-
-personas = json.loads(personadata)
+    personadata = json.load(personafile)
 
 client = MailChimp(mc_api= sys.argv[1], mc_user='accountadmin@massiveart.com')
 
@@ -60,9 +58,10 @@ def getAllCampaigns():
     campaignData = json.loads(json.dumps(client.campaigns.all(get_all=True)))
     for campaign in campaignData["campaigns"]:
 
-        campaignPersonas = personas["links"]
-
         campaignId = sq(campaign["id"])
+        #print(personadata["campaignId"])
+        #if (campaign["id"] == personadata["campaignId"]):
+    
         campaignStatus = campaign["status"]
         emailsSent= campaign["emails_sent"]
         campaignName = sq(campaign["settings"]["title"].replace("'",""))
@@ -108,11 +107,14 @@ def getAllCampaigns():
             
             if "activity" in email:
                 for emailAction in email["activity"]:
+
                     if emailAction["action"] == 'open':
                         createText= """
                                     MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                     MATCH (c:Campaign{campaignId:"""+campaignId+"""})
                                     MERGE (p) - [:OPENED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
+                                    MERGE (ps:Persona {persona:"Engagement"})
+                                    MERGE (p) - [:HAS_PERSONA {source:"Open", fromCampaign:"""+campaignId+"""}] -> (ps)
                                     """
                     elif emailAction["action"] == 'bounce':
                         createText="""
@@ -121,7 +123,21 @@ def getAllCampaigns():
                                     MERGE (p) - [:BOUNCED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
                                     """
                     elif emailAction["action"] == 'click':
-                        print(emailAction["url"])
+                        for link in personadata["links"]:
+                            if (json.dumps(emailAction["url"]) == json.dumps(link["linkURL"])):
+                                for personaScore in link["personas"]:
+                                    createText= """
+                                             MATCH (p:Person{emailAddress:"""+emailAddress+"""})
+                                             MERGE (ps:Persona {persona:"""+sq(personaScore["persona"])+"""})
+                                             MERGE (p) - [:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+"""}] -> (ps)
+                                             MERGE (per:Persona {persona:"Engagement"})
+                                             MERGE (p) - [:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+"""}] -> (per)
+                                             """
+                                    with driver.session() as session:
+                                        result = session.run(createText)
+
+
+                                    #print(personaScore["persona"], personaScore["clickPoints"])
                         createText= """
                                     MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                     MERGE (u2:URL {url:"""+sq(emailAction["url"])+"""})
@@ -131,7 +147,7 @@ def getAllCampaigns():
                     with driver.session() as session:
                         result = session.run(createText)
                         #print(result)
-#getAllLists()
+getAllLists()
 getAllCampaigns()
 
 

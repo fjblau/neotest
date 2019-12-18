@@ -1,19 +1,26 @@
 {
-  "CampaignId": "ier9234234",
-  "CampaignName": "MA Newsletter",
+  "campaignId": "6032f808ac",
+  "CampaignName": "First Campaign",
   "links" : [
     {
-    "linkURL" : "https://www.massiveart.com/der-digitale-manager",
+    "linkURL" : "https://frankblau.photoshelter.com/gallery-collection/Weddings/C0000Al1gWE7WdJ4",
     "personas": [
-       {"Engineering" : {"openPoints": 1, "clickPoints" : 2}},
-       {"Engagement" : {"openPoints": 1, "clickPoints" : 2}}
+       {"persona":"Weddings","openPoints": 1, "clickPoints" : 2},
+       {"persona":"Photography","openPoints": 1, "clickPoints" : 2}
       ]
     },
     {
-    "linkURL" : "https://www.massiveart.com/das-fruehjahrs-event-bei-massive-art",
+    "linkURL" : "https://frankblau.photoshelter.com/gallery-collection/Music/C0000Ig0tVlXxyNs",
     "personas": [
-      {"Event" : {"openPoints": 1, "clickPoints" : 2}},
-      {"Engagement" : {"openPoints": 1, "clickPoints" : 2}}
+      {"persona":"Music", "openPoints": 1, "clickPoints" : 2},
+      {"persona":"Photography","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://frankblau.photoshelter.com/gallery-collection/Birds/C0000YOIOQOuQwkA",
+    "personas": [
+      {"persona":"Birds", "openPoints": 1, "clickPoints" : 2},
+      {"persona":"Photography","openPoints": 1, "clickPoints" : 2}
       ]
     }
   ]
