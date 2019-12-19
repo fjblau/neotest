@@ -7,6 +7,7 @@ from mailchimp3 import MailChimp
 import json
 import requests
 import hashlib
+import maya
 
 with open('persona.json', 'r') as personafile:
     personadata = json.load(personafile)
@@ -15,6 +16,19 @@ client = MailChimp(mc_api= sys.argv[1], mc_user='accountadmin@massiveart.com')
 
 uri = "bolt://localhost:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
+
+def deltaSeconds(action, sent):
+    minutes = int((maya.parse(action) - maya.parse(sent)).seconds/60)
+    if (minutes < 5):
+        response = "Fast"
+    elif (minutes < 60):
+        response = "Medium"
+    elif (minutes < 1440):
+        response = "Slow"
+    else:
+        response ="Very Slow"
+    return response
+
 
 def ts_to_str(ts):
     return datetime.datetime.fromtimestamp(ts/1000).strftime('%Y-%m-%d %H:%M:%S')
@@ -61,7 +75,7 @@ def getAllCampaigns():
         campaignId = sq(campaign["id"])
         #print(personadata["campaignId"])
         #if (campaign["id"] == personadata["campaignId"]):
-    
+        campaignSendTime = campaign["send_time"]
         campaignStatus = campaign["status"]
         emailsSent= campaign["emails_sent"]
         campaignName = sq(campaign["settings"]["title"].replace("'",""))
@@ -94,6 +108,7 @@ def getAllCampaigns():
             emailHashId = hashemailId(campaign["id"], campaign["recipients"]["list_id"], email["email_address"])
             emailId = sq(email["email_id"])
             emailAddress = sq(email["email_address"])
+
             createText = """
             MATCH (p:Person{emailAddress:"""+emailAddress+"""}),
                   (c2:Campaign {campaignId:"""+campaignId+"""}),
@@ -107,14 +122,15 @@ def getAllCampaigns():
             
             if "activity" in email:
                 for emailAction in email["activity"]:
-
+                    timeBeforeRead = deltaSeconds(emailAction["timestamp"], campaignSendTime)
                     if emailAction["action"] == 'open':
                         createText= """
                                     MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                     MATCH (c:Campaign{campaignId:"""+campaignId+"""})
                                     MERGE (p) - [:OPENED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
                                     MERGE (ps:Persona {persona:"Engagement"})
-                                    MERGE (p) - [:HAS_PERSONA {source:"Open", fromCampaign:"""+campaignId+""", points: 1}] -> (ps)
+                                    MERGE (p) - [rp:HAS_PERSONA {source:"Open", fromCampaign:"""+campaignId+""", points: 1}] -> (ps)
+                                    SET rp.responseTime ="""+sq(timeBeforeRead)+"""
                                     """
                     elif emailAction["action"] == 'bounce':
                         createText="""
@@ -129,9 +145,11 @@ def getAllCampaigns():
                                     createText= """
                                              MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                              MERGE (ps:Persona {persona:"""+sq(personaScore["persona"])+"""})
-                                             MERGE (p) - [:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+", points:"+str(personaScore["clickPoints"])+"""}] -> (ps)
+                                             MERGE (p) - [rp1:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+", points:"+str(personaScore["clickPoints"])+"""}] -> (ps)
+                                             SET rp1.responseTime ="""+sq(timeBeforeRead)+"""
                                              MERGE (per:Persona {persona:"Engagement"})
-                                             MERGE (p) - [:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+", points:"+str(personaScore["openPoints"])+"""}] -> (per)
+                                             MERGE (p) - [rp:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+", points:"+str(personaScore["openPoints"])+"""}] -> (per)
+                                             SET rp.responseTime ="""+sq(timeBeforeRead)+"""
                                              """
                                     with driver.session() as session:
                                         result = session.run(createText)
