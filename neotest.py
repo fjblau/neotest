@@ -114,7 +114,7 @@ def getAllCampaigns():
                                     MATCH (c:Campaign{campaignId:"""+campaignId+"""})
                                     MERGE (p) - [:OPENED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
                                     MERGE (ps:Persona {persona:"Engagement"})
-                                    MERGE (p) - [:HAS_PERSONA {source:"Open", fromCampaign:"""+campaignId+"""}] -> (ps)
+                                    MERGE (p) - [:HAS_PERSONA {source:"Open", fromCampaign:"""+campaignId+""", points: 1}] -> (ps)
                                     """
                     elif emailAction["action"] == 'bounce':
                         createText="""
@@ -129,9 +129,9 @@ def getAllCampaigns():
                                     createText= """
                                              MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                              MERGE (ps:Persona {persona:"""+sq(personaScore["persona"])+"""})
-                                             MERGE (p) - [:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+"""}] -> (ps)
+                                             MERGE (p) - [:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+", points:"+str(personaScore["clickPoints"])+"""}] -> (ps)
                                              MERGE (per:Persona {persona:"Engagement"})
-                                             MERGE (p) - [:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+"""}] -> (per)
+                                             MERGE (p) - [:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+", points:"+str(personaScore["openPoints"])+"""}] -> (per)
                                              """
                                     with driver.session() as session:
                                         result = session.run(createText)
