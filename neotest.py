@@ -1,4 +1,4 @@
-#!/usr/local/opt/python/libexec/bin/python
+#!/usr/bin/env python3
 
 from neo4j import GraphDatabase
 import datetime
@@ -91,16 +91,16 @@ def getAllCampaigns():
             result = session.run(createText)
             #print(result)
 
-        if (campaignStatus == 'sent'):
+        #if (campaignStatus == 'sent'):
             
-            createText = """
-            MATCH (c:Campaign{campaignId:"""+campaignId+"""})
-            MATCH (l:List{listId:"""+campaignRecipientListId+"""})
-            MERGE (e:EmailGenerated{content:'Email Template'}) - [:GENERATED_BY] -> (c) 
-            MERGE (e2:EmailGenerated {content:'Email Template'}) - [r:SENT_TO] -> (l)
-            """
-            with driver.session() as session:
-                result = session.run(createText)
+            #createText = """
+            #MATCH (c:Campaign{campaignId:"""+campaignId+"""})
+            #MATCH (l:List{listId:"""+campaignRecipientListId+"""})
+            #MERGE (e:EmailGenerated{content:'Email Template'}) - [:GENERATED_BY] -> (c) 
+            #MERGE (e2:EmailGenerated {content:'Email Template'}) - [r:SENT_TO] -> (l)
+            #"""
+            #with driver.session() as session:
+            #    result = session.run(createText)
                 #print(result)
 
         emailActivity = json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaign["id"], get_all=False)))
