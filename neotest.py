@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/local/opt/python/libexec/bin/python
 
 from neo4j import GraphDatabase
 import datetime
