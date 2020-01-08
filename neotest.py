@@ -8,6 +8,9 @@ import json
 import requests
 import hashlib
 import maya
+import redis
+import mysql.connector
+import os
 
 with open('persona.json', 'r') as personafile:
     personadata = json.load(personafile)
@@ -16,6 +19,21 @@ client = MailChimp(mc_api= sys.argv[1], mc_user='accountadmin@massiveart.com')
 
 uri = "bolt://localhost:7687"
 driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
+
+def checkCRM(emailAddress):
+    mydb = mysql.connector.connect(
+    host=os.environ["MYSQL_HOST"],
+    user=os.environ["MYSQL_USER"],
+        passwd=os.environ["MYSQL_PASSWD"],
+      database=os.environ["MYSQL_DATABASE"]
+    )
+    mycursor = mydb.cursor()
+    query = """
+            SELECT email_address, confirm_opt_in
+            FROM email_addresses
+            WHERE email_address = """+sq(emailAddress)
+    mycursor.execute(query)
+    return mycursor.fetchall()
 
 def deltaSeconds(action, sent):
     minutes = int((maya.parse(action) - maya.parse(sent)).seconds/60)
@@ -60,10 +78,20 @@ def getAllLists():
             MERGE (p) -[r2:AT_DOMAIN]-> (d)
             ON CREATE SET p.CreatedAt = timestamp()
             """
-        #print(createText)
             with driver.session() as session:
                 result = session.run(createText)
                 print("Lists", result)
+
+            for crmRec in (checkCRM(email["email_address"])):
+                createText = """
+                MERGE (p:Person{emailAddress:"""+emailAddress+", memberId:"+memberId+"""})
+                MERGE (c:CRM{crm: 'SuiteCrm'})
+                MERGE (p) -[r:IN_CRM {crm_opt_in:"""+sq(crmRec[1])+"""}]-> (c)
+                ON CREATE SET r.CreatedAt = timestamp()
+                """
+                with driver.session() as session:
+                    result = session.run(createText)
+
         #memberActivities = json.loads(json.dumps(client.lists.members.activity.all(list_id=listRec["id"], subscriber_hash=email["id"])))
         #print(memberActivities)
 
