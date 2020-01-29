@@ -18,7 +18,7 @@ with open('persona.json', 'r') as personafile:
 client = MailChimp(mc_api= sys.argv[1], mc_user='accountadmin@massiveart.com')
 
 uri = "bolt://localhost:7687"
-driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"))
+driver = GraphDatabase.driver(uri, auth=("neo4j", "2Ellbelt!"), encrypted=False)
 
 def checkCRM(emailAddress):
     mydb = mysql.connector.connect(
@@ -98,6 +98,9 @@ def getAllLists():
 
 def getAllCampaigns():
     campaignData = json.loads(json.dumps(client.campaigns.all(get_all=True)))
+    #campaignData = json.loads(json.dumps(client.campaigns.get(campaign_id="bb1481f31c")))
+    #print(campaignData)
+    #return
     for campaign in campaignData["campaigns"]:
 
         campaignId = sq(campaign["id"])
@@ -150,6 +153,7 @@ def getAllCampaigns():
             
             if "activity" in email:
                 for emailAction in email["activity"]:
+
                     timeBeforeRead = deltaSeconds(emailAction["timestamp"], campaignSendTime)
                     if emailAction["action"] == 'open':
                         createText= """

@@ -1,26 +1,41 @@
 {
-  "campaignId": "6032f808ac",
-  "CampaignName": "First Campaign",
+  "campaignId": "bb1481f31c",
+  "webid": "3175601",
+  "CampaignName": "email-campaign-2020-01-29",
   "links" : [
     {
-    "linkURL" : "https://frankblau.photoshelter.com/gallery-collection/Weddings/C0000Al1gWE7WdJ4",
+    "linkURL" : "https://www.massiveart.com/blog/headless-e-commerce-systeme-sulu-und-sylius",
     "personas": [
-       {"persona":"Weddings","openPoints": 1, "clickPoints" : 2},
-       {"persona":"Photography","openPoints": 1, "clickPoints" : 2}
+       {"persona":"Commerce","openPoints": 1, "clickPoints" : 2},
+       {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
       ]
     },
     {
-    "linkURL" : "https://frankblau.photoshelter.com/gallery-collection/Music/C0000Ig0tVlXxyNs",
+    "linkURL" : "https://www.massiveart.com/blog/was-ist-growth-marketing",
     "personas": [
-      {"persona":"Music", "openPoints": 1, "clickPoints" : 2},
-      {"persona":"Photography","openPoints": 1, "clickPoints" : 2}
+      {"persona":"CRO", "openPoints": 1, "clickPoints" : 2},
+      {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
       ]
     },
     {
-    "linkURL" : "https://frankblau.photoshelter.com/gallery-collection/Birds/C0000YOIOQOuQwkA",
+    "linkURL" : "https://www.massiveart.com/blog/finger-weg-von-wechat-alles-ueber-die-dunkle-seite-der-app",
     "personas": [
-      {"persona":"Birds", "openPoints": 1, "clickPoints" : 2},
-      {"persona":"Photography","openPoints": 1, "clickPoints" : 2}
+      {"persona":"Experience", "openPoints": 1, "clickPoints" : 2},
+      {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/blog/8-herausforderungen-einer-web-agentur-mit-scrum",
+    "personas": [
+      {"persona":"Engineering", "openPoints": 1, "clickPoints" : 2},
+      {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://https://www.massiveart.com/blog/business-intelligence-bei-massive-art",
+    "personas": [
+      {"persona":"BI", "openPoints": 1, "clickPoints" : 2},
+      {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
       ]
     }
   ]
