@@ -5,10 +5,8 @@ import datetime
 import sys
 from mailchimp3 import MailChimp
 import json
-import requests
 import hashlib
 import maya
-import redis
 import mysql.connector
 import os
 from furl import furl
@@ -48,7 +46,6 @@ def deltaSeconds(action, sent):
         response ="Very Slow"
     return response
 
-
 def ts_to_str(ts):
     return datetime.datetime.fromtimestamp(ts/1000).strftime('%Y-%m-%d %H:%M:%S')
 
@@ -58,6 +55,13 @@ def sq(q):
 def hashemailId(c, l, e):
     hashed = c+l+e
     return hashlib.sha256(hashed.encode()).hexdigest()
+
+def getCampaignId(webId):
+    campaignData =  json.loads(json.dumps(client.campaigns.all(get_all=True)))
+    for campaign in campaignData["campaigns"]:
+        if str(campaign["web_id"]) == str(webId):
+            return campaign["id"]
+   
 
 def getAllLists():
     listData = json.loads(json.dumps(client.lists.all(get_all=True)))
@@ -94,7 +98,8 @@ def getAllLists():
                     result = session.run(createText)
 
 
-def getCampaign(cId):
+def getCampaign(webId):
+    cId = getCampaignId(webId)
     campaign = client.campaigns.get(campaign_id=cId)
     campaignId = sq(campaign["id"])
     campaignSendTime = campaign["send_time"]
@@ -164,14 +169,14 @@ def getCampaign(cId):
                                     result = session.run(createText)
                     createText= """
                                 MATCH (p:Person{emailAddress:"""+emailAddress+"""})
-                                MERGE (u2:URL {url:"""+sq(emailAction["url"])+"""})
+                                MERGE (u2:URL {url:"""+sq(sourceLink)+"""})
                                 MERGE (p) - [:CLICKED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (u2)
                                 """
                 with driver.session() as session:
                     result = session.run(createText)
 #getAllLists()
-getCampaign('2eca9323af')
-
+getCampaign('3175601')
+#print(getCampaignId('3176125'))
 
 
 

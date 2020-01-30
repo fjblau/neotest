@@ -1,5 +1,5 @@
 {
-  "campaignId": "bb1481f31c",
+  "campaignId": "2eca9323af",
   "webid": "3175601",
   "CampaignName": "email-campaign-2020-01-29",
   "links" : [
@@ -32,7 +32,7 @@
       ]
     },
     {
-    "linkURL" : "https://https://www.massiveart.com/blog/business-intelligence-bei-massive-art",
+    "linkURL" : "https://www.massiveart.com/blog/business-intelligence-bei-massive-art",
     "personas": [
       {"persona":"BI", "openPoints": 1, "clickPoints" : 2},
       {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
