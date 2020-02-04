@@ -99,6 +99,7 @@ def getAllLists():
 
 
 def getCampaign(webId):
+
     cId = getCampaignId(webId)
     campaign = client.campaigns.get(campaign_id=cId)
     campaignId = sq(campaign["id"])
@@ -108,15 +109,16 @@ def getCampaign(webId):
     campaignName = sq(campaign["settings"]["title"].replace("'",""))
     campaignRecipientListId = sq(campaign["recipients"]["list_id"])
     createText = """
-    MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+",emails_sent:"+str(emailsSent)+"""})
+    MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+"""})
     MERGE (l:List{listId:"""+campaignRecipientListId+"""})
     MERGE (l) -[r:LIST_USED_IN]-> (c)
-    ON CREATE SET c.CreatedAt = timestamp()
+    SET c.emails_sent = """+str(emailsSent)+"""
     """
     with driver.session() as session:
         result = session.run(createText)
 
     emailActivity = json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaign["id"], get_all=True)))
+
     for email in emailActivity["emails"]:
         emailHashId = hashemailId(campaign["id"], campaign["recipients"]["list_id"], email["email_address"])
         emailId = sq(email["email_id"])
@@ -140,9 +142,6 @@ def getCampaign(webId):
                                 MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                 MATCH (c:Campaign{campaignId:"""+campaignId+"""})
                                 MERGE (p) - [:OPENED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
-                                MERGE (ps:Persona {persona:"Engagement"})
-                                MERGE (p) - [rp:HAS_PERSONA {source:"Open", fromCampaign:"""+campaignId+""", points: 1}] -> (ps)
-                                SET rp.responseTime ="""+sq(timeBeforeRead)+"""
                                 """
                 elif emailAction["action"] == 'bounce':
                     createText="""
@@ -170,7 +169,9 @@ def getCampaign(webId):
                     createText= """
                                 MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                 MERGE (u2:URL {url:"""+sq(sourceLink)+"""})
-                                MERGE (p) - [:CLICKED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (u2)
+                                MERGE (p) - [c:CLICKED] -> (u2)
+                                ON CREATE SET c.timestamp = """+sq(emailAction["timestamp"])+""", c.clickCount = 1
+                                ON MATCH SET c.timestamp = """+sq(emailAction["timestamp"])+""", c.clickCount = c.clickCount + 1
                                 """
                 with driver.session() as session:
                     result = session.run(createText)
