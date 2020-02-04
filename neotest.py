@@ -141,7 +141,9 @@ def getCampaign(webId):
                     createText= """
                                 MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                 MATCH (c:Campaign{campaignId:"""+campaignId+"""})
-                                MERGE (p) - [:OPENED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
+                                MERGE (p) - [o:OPENED] -> (c)
+                                ON CREATE SET o.timestamp = """+sq(emailAction["timestamp"])+""", o.clickCount = 1
+                                ON MATCH SET o.timestamp = """+sq(emailAction["timestamp"])+""", o.clickCount = o.clickCount + 1
                                 """
                 elif emailAction["action"] == 'bounce':
                     createText="""
