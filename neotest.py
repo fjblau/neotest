@@ -1,4 +1,4 @@
-#!/usr/local/opt/python/libexec/bin/python
+#!/usr/bin/env python
 
 from neo4j import GraphDatabase
 import datetime
@@ -142,8 +142,8 @@ def getCampaign(webId):
                                 MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                 MATCH (c:Campaign{campaignId:"""+campaignId+"""})
                                 MERGE (p) - [o:OPENED] -> (c)
-                                ON CREATE SET o.timestamp = """+sq(emailAction["timestamp"])+""", o.clickCount = 1
-                                ON MATCH SET o.timestamp = """+sq(emailAction["timestamp"])+""", o.clickCount = o.clickCount + 1
+                                ON CREATE SET o.timestamp = """+sq(emailAction["timestamp"])+""", o.openCount = 2
+                                ON MATCH SET o.timestamp = """+sq(emailAction["timestamp"])+""", o.openCount = o.openCount + 1
                                 """
                 elif emailAction["action"] == 'bounce':
                     createText="""
@@ -160,11 +160,10 @@ def getCampaign(webId):
                                 createText= """
                                          MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                          MERGE (ps:Persona {persona:"""+sq(personaScore["persona"])+"""})
-                                         MERGE (p) - [rp1:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+", points:"+str(personaScore["clickPoints"])+"""}] -> (ps)
-                                         SET rp1.responseTime ="""+sq(timeBeforeRead)+"""
-                                         MERGE (per:Persona {persona:"Engagement"})
-                                         MERGE (p) - [rp:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+", points:"+str(personaScore["openPoints"])+"""}] -> (per)
-                                         SET rp.responseTime ="""+sq(timeBeforeRead)+"""
+                                         MERGE (p) - [rp1:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+"""}] -> (ps)
+                                         ON CREATE SET rp1.responseTime ="""+sq(timeBeforeRead)+""", rp1.points = 2
+                                         ON MATCH SET rp1.points = rp1.points + 1
+                                         
                                          """
                                 with driver.session() as session:
                                     result = session.run(createText)
@@ -172,7 +171,7 @@ def getCampaign(webId):
                                 MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                 MERGE (u2:URL {url:"""+sq(sourceLink)+"""})
                                 MERGE (p) - [c:CLICKED] -> (u2)
-                                ON CREATE SET c.timestamp = """+sq(emailAction["timestamp"])+""", c.clickCount = 1
+                                ON CREATE SET c.timestamp = """+sq(emailAction["timestamp"])+""", c.clickCount = 2
                                 ON MATCH SET c.timestamp = """+sq(emailAction["timestamp"])+""", c.clickCount = c.clickCount + 1
                                 """
                 with driver.session() as session:
