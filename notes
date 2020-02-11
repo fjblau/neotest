@@ -1,1 +1,20 @@
 https://github.com/VingtCinq/python-mailchimp
+match (n:Person)
+match (n)-[h:HAS_PERSONA]-(pers:Persona)
+match (n)-[c:CLICKED]-(u:URL)
+match (n)-[o:OPENED]-(cam:Campaign)
+return n.emailAddress, collect(distinct(pers.persona)),sum((h.points*1.0)+(c.clickCount*1.5)+(o.openCount*.5)) as engagementscore order by engagementscore desc
+
+//Bounced Emails
+match (n:Person)
+match (n)-[o:BOUNCED]-(cam:Campaign)
+match (n)-[d:AT_DOMAIN]-(dom:Domain)
+return dom.domain, n.emailAddress order by dom.domain
+
+//Engagement Score
+match (n:Person)
+match (n)-[h:HAS_PERSONA]-(pers:Persona)
+match (n)-[c:CLICKED]-(u:URL)
+match (n)-[o:OPENED]-(cam:Campaign)
+return n.emailAddress, collect(distinct(pers.persona)),sum((h.points*1.0)+(c.clickCount*1.5)+(o.openCount*.5)) as engagementscore order by engagementscore desc
+
