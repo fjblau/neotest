@@ -34,6 +34,35 @@ def checkCRM(emailAddress):
     mycursor.execute(query)
     return mycursor.fetchall()
 
+def loadCustomers():
+    mydb = mysql.connector.connect(
+    host=os.environ["MYSQL_HOST_EASYBILL"],
+    user=os.environ["MYSQL_USER_EASYBILL"],
+        passwd=os.environ["MYSQL_PASSWD_EASYBILL"],
+      database=os.environ["MYSQL_DATABASE_EASYBILL"]
+    )
+    mycursor = mydb.cursor()
+    query = """
+            SELECT DISTINCT LOWER(SUBSTRING(h.email, LOCATE('@', email) + 1)) as domain,
+            sum(l.total_price_net) totalInvoices
+            FROM easybill_headers h
+            join easybill_lines l on h.document_id = l.header_id AND h.email is not null
+             WHERE  LOWER(SUBSTRING(h.email, LOCATE('@', email) + 1)) != 'massiveart.com'
+            GROUP BY LOWER(SUBSTRING(h.email, LOCATE('@', email) + 1))"""
+    mycursor.execute(query)
+    for domain, totalInvoices in mycursor:
+        #print(domain, totalInvoices)
+        createText = """
+            MATCH (d3:Domain {domain:"massiveart.com"})
+            MERGE (d:Domain{domain:"""+sq(domain)+"""})
+            MERGE (d)-[:IS_CUSTOMER_OF]-(d3)
+            SET d.totalInvoices = """+str(totalInvoices)
+        with driver.session() as session:
+            result = session.run(createText)
+            print("Domains", result)
+
+    return
+
 def deltaSeconds(action, sent):
     minutes = int((maya.parse(action) - maya.parse(sent)).seconds/60)
     if (minutes < 5):
@@ -176,8 +205,10 @@ def getCampaign(webId):
                                 """
                 with driver.session() as session:
                     result = session.run(createText)
+
 #getAllLists()
-getCampaign('3175601')
+#getCampaign('3175601')
+loadCustomers()
 #print(getCampaignId('3176125'))
 
 
