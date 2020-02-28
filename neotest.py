@@ -54,7 +54,7 @@ def loadCustomers():
         #print(domain, totalInvoices)
         createText = """
             MATCH (d3:Domain {domain:"massiveart.com"})
-            MERGE (d:Domain{domain:"""+sq(domain)+"""})
+            MATCH (d:Domain{domain:"""+sq(domain)+"""})
             MERGE (d)-[:IS_CUSTOMER_OF]-(d3)
             SET d.totalInvoices = """+str(totalInvoices)
         with driver.session() as session:
@@ -125,6 +125,7 @@ def getAllLists():
                 """
                 with driver.session() as session:
                     result = session.run(createText)
+                    print("CRM", result)
 
 
 def getCampaign(webId):
@@ -145,6 +146,7 @@ def getCampaign(webId):
     """
     with driver.session() as session:
         result = session.run(createText)
+        print("Campaign", result)
 
     emailActivity = json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaign["id"], get_all=True)))
 
@@ -162,6 +164,7 @@ def getCampaign(webId):
         """
         with driver.session() as session:
             result = session.run(createText)
+            print("Sent", result)
         
         if "activity" in email:
             for emailAction in email["activity"]:
@@ -196,6 +199,7 @@ def getCampaign(webId):
                                          """
                                 with driver.session() as session:
                                     result = session.run(createText)
+                                    print("Personas", result)
                     createText= """
                                 MATCH (p:Person{emailAddress:"""+emailAddress+"""})
                                 MERGE (u2:URL {url:"""+sq(sourceLink)+"""})
@@ -205,9 +209,10 @@ def getCampaign(webId):
                                 """
                 with driver.session() as session:
                     result = session.run(createText)
+                    print("Emails", result)
 
 #getAllLists()
-#getCampaign('3175601')
+getCampaign('3184649')
 loadCustomers()
 #print(getCampaignId('3176125'))
 
