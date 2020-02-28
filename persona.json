@@ -1,42 +1,70 @@
 {
   "campaignId": "2eca9323af",
-  "webid": "3175601",
-  "CampaignName": "email-campaign-2020-01-29",
+  "webid": "3184649",
+  "CampaignName": "EMAIL_CAMPAIGN_2020_02_20",
   "links" : [
     {
-    "linkURL" : "https://www.massiveart.com/blog/headless-e-commerce-systeme-sulu-und-sylius",
+    "linkURL" : "https://https://www.massiveart.com/blog/qualitative-vs-quantitative-methoden-zur-hypothesenerstellung",
     "personas": [
-       {"persona":"Commerce","openPoints": 1, "clickPoints" : 2},
-       {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
+       {"persona":"Growth","openPoints": 1, "clickPoints" : 2}
       ]
     },
     {
     "linkURL" : "https://www.massiveart.com/blog/was-ist-growth-marketing",
     "personas": [
-      {"persona":"CRO", "openPoints": 1, "clickPoints" : 2},
-      {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
+      {"persona":"CRO", "openPoints": 1, "clickPoints" : 2}
       ]
     },
     {
-    "linkURL" : "https://www.massiveart.com/blog/finger-weg-von-wechat-alles-ueber-die-dunkle-seite-der-app",
+    "linkURL" : "https://sulu.io",
     "personas": [
-      {"persona":"Experience", "openPoints": 1, "clickPoints" : 2},
-      {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
+      {"persona":"Engineering", "openPoints": 1, "clickPoints" : 2}
       ]
     },
     {
-    "linkURL" : "https://www.massiveart.com/blog/8-herausforderungen-einer-web-agentur-mit-scrum",
+    "linkURL" : "https://www.massiveart.com/blog/ein-setup-fuer-rest-schnittstellen-die-eleganz-von-rest-apis-mit-symfony",
     "personas": [
-      {"persona":"Engineering", "openPoints": 1, "clickPoints" : 2},
-      {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
+      {"persona":"Engineering", "openPoints": 1, "clickPoints" : 2}
       ]
     },
     {
-    "linkURL" : "https://www.massiveart.com/blog/business-intelligence-bei-massive-art",
+    "linkURL" : "https://www.massiveart.com/blog/the-role-of-business-intelligence",
     "personas": [
-      {"persona":"BI", "openPoints": 1, "clickPoints" : 2},
-      {"persona":"Newsletter","openPoints": 1, "clickPoints" : 2}
+      {"persona":"BI", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.linkedin.com/feed/",
+    "personas": [
+      {"persona":"LinkedIn", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/jobs",
+    "personas": [
+      {"persona":"Jobs-General", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+     {
+    "linkURL" : "https://www.massiveart.com/jobs/web-developer",
+    "personas": [
+      {"persona":"Jobs-Web Developer", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+     {
+    "linkURL" : "https://www.massiveart.com/jobs/jobs-ui-ux-designer",
+    "personas": [
+      {"persona":"Jobs-UI-UX", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+     {
+    "linkURL" : "https://www.massiveart.com/jobs/senior-online-marketing-manager-m-w",
+    "personas": [
+      {"persona":"Jobs-Online Marketing", "openPoints": 1, "clickPoints" : 2}
       ]
     }
   ]
 }
+
+
+
