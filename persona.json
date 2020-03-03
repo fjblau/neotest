@@ -1,10 +1,107 @@
+[{
+  "campaignId": "2eca9323af",
+  "webid": "3175601",
+  "CampaignName": "email-campaign-2020-01-29",
+  "links" : [
+      {
+    "linkURL" : "https://www.massiveart.com/de",
+    "personas": [
+       {"persona":"MA General","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.instagram.com/massiveartwebservices/",
+    "personas": [
+       {"persona":"MA Social","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/de/impressum",
+    "personas": [
+       {"persona":"MA General","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/",
+    "personas": [
+       {"persona":"MA General","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/blog/headless-e-commerce-systeme-sulu-und-sylius",
+    "personas": [
+       {"persona":"Commerce","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/blog/was-ist-growth-marketing",
+    "personas": [
+      {"persona":"CRO", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/blog/finger-weg-von-wechat-alles-ueber-die-dunkle-seite-der-app",
+    "personas": [
+      {"persona":"Experience", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/blog/8-herausforderungen-einer-web-agentur-mit-scrum",
+    "personas": [
+      {"persona":"Engineering", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/blog/business-intelligence-bei-massive-art",
+    "personas": [
+      {"persona":"BI", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://at.linkedin.com/company/massive-art-webservices-gmbh",
+    "personas": [
+      {"persona":"LinkedIn", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://massiveart.us2.list-manage.com/unsubscribe",
+    "personas": [
+      {"persona":"Unsubscribe", "openPoints": 1, "clickPoints" : 2}
+      ]
+    }
+  ]
+},
 {
   "campaignId": "2eca9323af",
   "webid": "3184649",
   "CampaignName": "EMAIL_CAMPAIGN_2020_02_20",
   "links" : [
     {
-    "linkURL" : "https://https://www.massiveart.com/blog/qualitative-vs-quantitative-methoden-zur-hypothesenerstellung",
+    "linkURL" : "https://www.massiveart.com/de",
+    "personas": [
+       {"persona":"MA General","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.instagram.com/massiveartwebservices/",
+    "personas": [
+       {"persona":"MA Social","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/de/impressum",
+    "personas": [
+       {"persona":"MA General","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/",
+    "personas": [
+       {"persona":"MA General","openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://www.massiveart.com/blog/qualitative-vs-quantitative-methoden-zur-hypothesenerstellung",
     "personas": [
        {"persona":"Growth","openPoints": 1, "clickPoints" : 2}
       ]
@@ -17,6 +114,12 @@
     },
     {
     "linkURL" : "https://sulu.io",
+    "personas": [
+      {"persona":"Engineering", "openPoints": 1, "clickPoints" : 2}
+      ]
+    },
+    {
+    "linkURL" : "https://sulu.io/blog/sulu-release-1-6-31-2-0-4",
     "personas": [
       {"persona":"Engineering", "openPoints": 1, "clickPoints" : 2}
       ]
@@ -65,6 +168,7 @@
     }
   ]
 }
+]
 
 
 
