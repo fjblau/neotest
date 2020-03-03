@@ -28,9 +28,9 @@ def checkCRM(emailAddress):
     )
     mycursor = mydb.cursor()
     query = """
-            SELECT email_address, confirm_opt_in
+            SELECT LOWER(email_address), confirm_opt_in
             FROM email_addresses
-            WHERE email_address = """+sq(emailAddress)
+            WHERE LOWER(email_address) = """+sq(emailAddress)
     mycursor.execute(query)
     return mycursor.fetchall()
 
@@ -54,12 +54,12 @@ def loadCustomers():
         #print(domain, totalInvoices)
         createText = """
             MATCH (d3:Domain {domain:"massiveart.com"})
-            MATCH (d:Domain{domain:"""+sq(domain)+"""})
+            MATCH (d:Domain{domain:"""+sq(domain.lower())+"""})
             MERGE (d)-[:IS_CUSTOMER_OF]-(d3)
             SET d.totalInvoices = """+str(totalInvoices)
         with driver.session() as session:
             result = session.run(createText)
-            print("Domains", result)
+            #print("Domains", result)
 
     return
 
@@ -101,7 +101,7 @@ def getAllLists():
         listMembers = json.loads(json.dumps(client.lists.members.all(list_id=listId, get_all=True)))
         listId = sq(listRec["id"])
         for email in listMembers["members"]:
-            emailAddress = sq(email["email_address"])
+            emailAddress = sq(email["email_address"].lower())
             domain = sq(email["email_address"].split('@')[1])
             memberId = sq(email["id"])
             createText = """
@@ -128,91 +128,91 @@ def getAllLists():
                     print("CRM", result)
 
 
-def getCampaign(webId):
+def getCampaign():
+    i=0
+    for i in range(len(personadata)):
+        print("Campaigns:", i, " of ", len(personadata))
 
-    cId = getCampaignId(webId)
-    campaign = client.campaigns.get(campaign_id=cId)
-    campaignId = sq(campaign["id"])
-    campaignSendTime = campaign["send_time"]
-    campaignStatus = campaign["status"]
-    emailsSent= campaign["emails_sent"]
-    campaignName = sq(campaign["settings"]["title"].replace("'",""))
-    campaignRecipientListId = sq(campaign["recipients"]["list_id"])
-    createText = """
-    MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+"""})
-    MERGE (l:List{listId:"""+campaignRecipientListId+"""})
-    MERGE (l) -[r:LIST_USED_IN]-> (c)
-    SET c.emails_sent = """+str(emailsSent)+"""
-    """
-    with driver.session() as session:
-        result = session.run(createText)
-        print("Campaign", result)
-
-    emailActivity = json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaign["id"], get_all=True)))
-
-    for email in emailActivity["emails"]:
-        emailHashId = hashemailId(campaign["id"], campaign["recipients"]["list_id"], email["email_address"])
-        emailId = sq(email["email_id"])
-        emailAddress = sq(email["email_address"])
-
+        webId = personadata[i]["webid"]
+        print(webId)
+      
+        cId = getCampaignId(webId)
+        campaign = client.campaigns.get(campaign_id=cId)
+        campaignId = sq(campaign["id"])
+        campaignSendTime = campaign["send_time"]
+        campaignStatus = campaign["status"]
+        emailsSent= campaign["emails_sent"]
+        campaignName = sq(campaign["settings"]["title"].replace("'",""))
+        campaignRecipientListId = sq(campaign["recipients"]["list_id"])
         createText = """
-        MATCH (p:Person{emailAddress:"""+emailAddress+"""}),
-              (c2:Campaign {campaignId:"""+campaignId+"""}),
-              (l2:List{listId:"""+campaignRecipientListId+"""})
-        MERGE (e:Email {content:'Email', status: 'Sent', emailHashId:"""+sq(emailHashId)+"""}) - [to:SENT_TO] -> (p)
-        MERGE (e2:Email{content:'Email', status: 'Sent', emailHashId:"""+sq(emailHashId)+"""}) - [from:SENT_FROM] -> (l2)
+        MERGE (c:Campaign{campaignId:"""+campaignId+", name:"+campaignName+"""})
+        MERGE (l:List{listId:"""+campaignRecipientListId+"""})
+        MERGE (l) -[r:LIST_USED_IN]-> (c)
+        SET c.emails_sent = """+str(emailsSent)+"""
         """
         with driver.session() as session:
             result = session.run(createText)
-            print("Sent", result)
-        
-        if "activity" in email:
-            for emailAction in email["activity"]:
-                timeBeforeRead = deltaSeconds(emailAction["timestamp"], campaignSendTime)
-                if emailAction["action"] == 'open':
-                    createText= """
-                                MATCH (p:Person{emailAddress:"""+emailAddress+"""})
-                                MATCH (c:Campaign{campaignId:"""+campaignId+"""})
-                                MERGE (p) - [o:OPENED] -> (c)
-                                ON CREATE SET o.timestamp = """+sq(emailAction["timestamp"])+""", o.openCount = 2
-                                ON MATCH SET o.timestamp = """+sq(emailAction["timestamp"])+""", o.openCount = o.openCount + 1
-                                """
-                elif emailAction["action"] == 'bounce':
-                    createText="""
-                                MATCH (p:Person{emailAddress:"""+emailAddress+"""})
-                                MATCH (c:Campaign{campaignId:"""+campaignId+"""})
-                                MERGE (p) - [:BOUNCED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
-                                """
-                elif emailAction["action"] == 'click':
-                    for link in personadata["links"]:
-                        sourceLink = furl(json.dumps(emailAction["url"])).remove(args=True, fragment=True).url.strip('%22')
-                        targetLink = furl(json.dumps(link["linkURL"])).remove(args=True, fragment=True).url.strip('%22')
-                        if (sourceLink == targetLink):
-                            for personaScore in link["personas"]:
-                                createText= """
-                                         MATCH (p:Person{emailAddress:"""+emailAddress+"""})
-                                         MERGE (ps:Persona {persona:"""+sq(personaScore["persona"])+"""})
-                                         MERGE (p) - [rp1:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+"""}] -> (ps)
-                                         ON CREATE SET rp1.responseTime ="""+sq(timeBeforeRead)+""", rp1.points = 2
-                                         ON MATCH SET rp1.points = rp1.points + 1
-                                         
-                                         """
-                                with driver.session() as session:
-                                    result = session.run(createText)
-                                    print("Personas", result)
-                    createText= """
-                                MATCH (p:Person{emailAddress:"""+emailAddress+"""})
-                                MERGE (u2:URL {url:"""+sq(sourceLink)+"""})
-                                MERGE (p) - [c:CLICKED] -> (u2)
-                                ON CREATE SET c.timestamp = """+sq(emailAction["timestamp"])+""", c.clickCount = 2
-                                ON MATCH SET c.timestamp = """+sq(emailAction["timestamp"])+""", c.clickCount = c.clickCount + 1
-                                """
-                with driver.session() as session:
-                    result = session.run(createText)
-                    print("Emails", result)
+            print("Campaign", result)
 
-#getAllLists()
-getCampaign('3184649')
+        emailActivity = json.loads(json.dumps(client.reports.email_activity.all(campaign_id=campaign["id"], get_all=True)))
+
+        for email in emailActivity["emails"]:
+            emailHashId = hashemailId(campaign["id"], campaign["recipients"]["list_id"], email["email_address"])
+            emailId = sq(email["email_id"])
+            emailAddress = sq(email["email_address"].lower())
+
+            createText = """
+            MATCH (p:Person{emailAddress:"""+emailAddress+"""}),
+                  (c2:Campaign {campaignId:"""+campaignId+"""}),
+                  (l2:List{listId:"""+campaignRecipientListId+"""})
+            MERGE (e:Email {content:'Email', status: 'Sent', emailHashId:"""+sq(emailHashId)+"""}) - [to:SENT_TO] -> (p)
+            MERGE (e2:Email{content:'Email', status: 'Sent', emailHashId:"""+sq(emailHashId)+"""}) - [from:SENT_FROM] -> (l2)
+            """
+            with driver.session() as session:
+                result = session.run(createText)
+                print("Sent", result)
+            
+            if "activity" in email:
+                for emailAction in email["activity"]:
+                    timeBeforeRead = deltaSeconds(emailAction["timestamp"], campaignSendTime)
+                    if emailAction["action"] == 'open':
+                        createText= """
+                                    MATCH (p:Person{emailAddress:"""+emailAddress+"""})
+                                    MATCH (c:Campaign{campaignId:"""+campaignId+"""})
+                                    MERGE (p) - [o:OPENED {timestamp: """+sq(emailAction["timestamp"])+"""}] -> (c)
+                                    """
+                    elif emailAction["action"] == 'bounce':
+                        createText="""
+                                    MATCH (p:Person{emailAddress:"""+emailAddress+"""})
+                                    MATCH (c:Campaign{campaignId:"""+campaignId+"""})
+                                    MERGE (p) - [:BOUNCED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (c)
+                                    """
+                    elif emailAction["action"] == 'click':
+                        for link in personadata[i]["links"]:
+                            sourceLink = furl(json.dumps(emailAction["url"])).remove(args=True, fragment=True).url.strip('%22')
+                            targetLink = furl(json.dumps(link["linkURL"])).remove(args=True, fragment=True).url.strip('%22')
+                            if (sourceLink == targetLink):
+                                for personaScore in link["personas"]:
+                                    createText= """
+                                             MATCH (p:Person{emailAddress:"""+emailAddress+"""})
+                                             MERGE (ps:Persona {persona:"""+sq(personaScore["persona"])+"""})
+                                             MERGE (p) - [rp1:HAS_PERSONA {source:"Click", fromCampaign:"""+campaignId+""" , responseTime: """+sq(timeBeforeRead)+"""}] -> (ps)
+                                             """
+                                    with driver.session() as session:
+                                        result = session.run(createText)
+                                        print("Personas", result)
+                        createText= """
+                                    MATCH (p:Person{emailAddress:"""+emailAddress+"""})
+                                    MERGE (u2:URL {url:"""+sq(sourceLink)+"""})
+                                    MERGE (p) - [c:CLICKED {timestamp:"""+sq(emailAction["timestamp"])+"""}] -> (u2)
+                                    """
+                    with driver.session() as session:
+                        result = session.run(createText)
+                        print("Emails", result)
+
+
+getAllLists()
+getCampaign()
 loadCustomers()
 #print(getCampaignId('3176125'))
 
